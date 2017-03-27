@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+	<head>
+		<title>Mobile - Demo</title>
+		<meta charset="utf-8">
+		
+		<link rel="stylesheet" href="style/style.css">
+	</head>
+	
+	<body>
+		<div class="garden">
+  			<div class="ball"></div>
+		</div>
+
+		<pre class="output"></pre>
+
+		<div id="bb" class="button gray">Touch Me to Change Color</div> 
+
+
+		<script src="http://demo.redline-china.com:8000/socket.io/socket.io.js"></script>
+		<!-- <script src="http://localhost:8000/socket.io/socket.io.js"></script> -->
+		<script src="js/requestAnimationFrame.js"></script>
+		<!-- <script src="js/Keys.js"></script> -->
+		<script src="js/devOrientation.js"></script>
+		<script src="js/Player.js"></script>
+		<script src="js/game.js"></script>
+
+		<script>
+			// Initialise the game
+			init();
+			animate();
+		</script>
+	</body>
+</html>

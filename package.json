@@ -1,0 +1,17 @@
+{
+  "author": "Tony Wu <tony_wuhongtao@163.com>",
+  "description": "A demo for show the interactiion between large screen and mobile, it used HTML5, WebSocket and so on",
+  "name": "demo-socket-game",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/tony-wuhongtao/lantern.git"
+  },
+  "engines": {
+    "node": ">= 0.4"
+  },
+  "license": "(MIT OR Apache-2.0)",
+  "dependencies": {
+    "socket.io": "^0.9.17"
+  }
+}
