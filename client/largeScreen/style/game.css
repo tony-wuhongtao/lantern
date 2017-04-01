@@ -2,6 +2,17 @@ body {
 	overflow: hidden;
 }
 
-canvas {
+/*canvas {
 	display: block;
+}*/
+canvas, img { 
+	display:block; 
+	margin:1em auto; 
+	/*border:1px solid black; */
 }
+
+canvas { 
+	background:url(../images/bk1.jpg); 
+	background-size:cover; 
+}
+

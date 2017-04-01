@@ -1,89 +1,62 @@
 /**************************************************
-** GAME PLAYER CLASS
+** GAME PLAYER CLASS WITH SPRITE
 **************************************************/
-var Player = function(startX, startY, color) {
-	var x = startX,
-		y = startY,
-		color = color,
-		id,
-		moveAmount = 2;
-	var canvasWidth = 1024;
-	var canvasHeight =	768;
+var Player = function(opt) {
+	var frameIndex = 0;	//The current frame to be displayed
+	var tickCount = 0; 	//The number updates since the current frame was first displayed
 
-	// Getters and setters
-	var getX = function() {
-		return x;
-	};
+	var that = {};
+	
+	that.ticksPerFrame = opt.ticksPerFrame || 0;//The number updates until the next frame should be displayed
+	that.numberOfFrames = opt.numberOfFrames || 1; //How many frames in a whole animate sprite
 
-	var getY = function() {
-		return y;
-	};
+	that.context = opt.context;
+	that.width = opt.width;
+	that.height = opt.height;
 
-	var setX = function(newX) {
-		x = newX;
-	};
+	that.image = opt.image;
 
-	var setY = function(newY) {
-		y = newY;
-	};
+	that.x = opt.x || 0;
+	that.y = opt.y || 0;
 
-	var getColor = function() {
-		return color;
-	};
+	that.scaleRatio = opt.scaleRatio || 1;
 
-	var setColor = function(newColor) {
-		color = newColor;
-	};
+	that.speed = opt.speed;
 
-	// Update player position
-	var updateMove = function(devOris) {
+	that.id = opt.id;
 
-		var prevX = x,
-			prevY = y;
+	that.update = function () {
+		tickCount += 1;
 
-		// Up key takes priority over down
-		if (devOris.up) {
-			if(prevY > 3+5){
-				y -= 1;
-			}			
-		} else if (devOris.down) {
-			if(prevY < canvasHeight-3-5){
-				y += 1;
+		if(tickCount > that.ticksPerFrame) {
+			tickCount = 0;
+			if(frameIndex < that.numberOfFrames - 1) {
+				frameIndex += 1;
+			} else {
+				frameIndex = 0;
 			}
 			
-		};
-
-		// Left key takes priority over right
-		if (devOris.left) {
-			if(prevX > 3+5){
-				x -= 1;
-			}
-			
-		} else if (devOris.right) {
-			if(prevX < canvasWidth-3-5){
-				x += 1;
-			}
-			
-		};
-
-		return (prevX != x || prevY != y) ? true : false;
+			that.y -= that.speed;
+		}
 	};
 
-	// Draw player
-	var draw = function(ctx) {
-		ctx.fillStyle = color;
-		ctx.fillRect(x-5, y-5, 10, 10);
+	that.render = function () {
+		//Draw the animation
+		that.context.drawImage(
+			that.image,
+			frameIndex * that.width / that.numberOfFrames,
+			0,
+			that.width / that.numberOfFrames,
+			that.height,
+			that.x,
+			that.y,
+			that.width / that.numberOfFrames * that.scaleRatio,
+			that.height * that.scaleRatio);
 	};
 
-	// Define which variables and methods can be accessed
-	return {
-		getX: getX,
-		getY: getY,
-		getColor: getColor,
-		setX: setX,
-		setY: setY,
-		setColor: setColor,
-		updateMove: updateMove,
-		draw: draw
-	}
+	that.getFrameWidth = function () {
+		return that.width / that.numberOfFrames;
+	};
+
+	return that;
 };

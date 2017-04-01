@@ -2,33 +2,20 @@
 ** GAME VARIABLES
 **************************************************/
 var canvas;		// Canvas DOM element
-var players=[]; //
-
-var myId = 0;
-
-var isLSOnline = true;
-var hadSentLantern = false;
-
-var toSendLantern = {};
-
-var mousePos = { x:0, y:0 };
-var lastPos = mousePos;
+var numPlayers = 1;
+var players = [];
 
 // var serverURL = "http://demo.redline-china.com";
-var serverURL = "http://localhost";
+// var serverURL = "http://localhost";
 /**************************************************
 ** GAME INITIALISATION
 **************************************************/
 function init() {
-	
-	isLSOnline = true;
-	isCanSendLantern = false;
-
-
 
 	// Declare the canvas and rendering context
 	canvas = document.getElementById("gameCanvas");
 
+	// Maximise the canvas
 	canvas.width = window.innerWidth-60;
 	canvas.height = window.innerHeight-60;
 	canvas.style.margin = 'auto auto';
@@ -36,16 +23,20 @@ function init() {
 	canvas.style.top = '20px';
 	canvas.style.left = '30px';
 
-	// Initialise the local player array to select
+
+
+
+
+	// var i;
+
+	// for (i = 0; i < numPlayers; i += 1) {
+	
+	// 	createPlayer2();
+	// }
+	
 	createLocalSelecterList();
 	gameLoop();
-
-	// Initialise socket connection
-	socket = io.connect(serverURL, {port: 8000, transports: ["websocket"]});
-
-	// Start listening for events
-	setEventHandlers();
-
+	
 	// For mouse 
 	canvas.addEventListener("mousedown", onMouseDown, false);
 	
@@ -55,9 +46,9 @@ function init() {
 
 	//For Mobile Touch
 	// Set up touch events for mobile, etc
-	// canvas.addEventListener("touchstart", onTouchStart, false);
-	// canvas.addEventListener("touchend", onTouchEnd, false);
-	// canvas.addEventListener("touchmove", onTouchMove, false);
+	canvas.addEventListener("touchstart", onTouchStart, false);
+	canvas.addEventListener("touchend", onTouchEnd, false);
+	canvas.addEventListener("touchmove", onTouchMove, false);
 
 	// Prevent scrolling when touching the canvas
 	document.body.addEventListener("touchstart", function (e) {
@@ -102,10 +93,8 @@ function onMouseUp (e) {
 	// console.log("x,y: %o", lastPos);
 	if(lastPos.y < canvas.height/2){
 		console.log("Click Up");
-		sendLantern(1);
 	}else{
 		console.log("Click Down");
-		sendLantern(2);
 	}
 };
 
@@ -129,10 +118,8 @@ function onTouchEnd(e) {
 	canvas.dispatchEvent(mouseEvent);
 	if(mousePos.y < canvas.height/2){
 		console.log("Click Up");
-		sendLantern(1);
 	}else{
 		console.log("Click Down");
-		sendLantern(2);
 	}
 
 };
@@ -154,53 +141,9 @@ function getTouchPos(canvasDom, touchEvent) {
 	};
 };
 
-//============================
-function sendLantern(whichOne) {
-	console.log("hadSentLantern: "+hadSentLantern);
-	console.log("isLSOnline: " + isLSOnline);
-	// if(hadSentLantern == false && isLSOnline == true) {
-		if(isLSOnline == true) {
-		switch(whichOne){
-			case 1:
-				var c1 = {};
-				c1.scaleRatio = 2.5;
-				// c1.img = "images/c1.png";
-				c1.imgNumber = 1;
-				c1.width = 1000;
-				c1.height = 100;
-				c1.numberOfFrames = 10;
-				c1.ticksPerFrame =  4;
-				toSendLantern = createPlayer(c1.imgNumber, c1.width, c1.height, c1.numberOfFrames, c1.ticksPerFrame);
-				socket.emit("MC_Start_Lantern", toSendLantern);
-				hadSentLantern = true;
-				break;
-			case 2:
-				var c2 = {};
-				c2.scaleRatio = 2;
-				// c2.img = "images/l1.png";
-				c2.imgNumber = 2;
-				c2.width = 500;
-				c2.height = 97;
-				c2.numberOfFrames = 5;
-				c2.ticksPerFrame = 12;
-				toSendLantern = createPlayer(c2.imgNumber, c2.width, c2.height, c2.numberOfFrames, c2.ticksPerFrame);
-				socket.emit("MC_Start_Lantern", toSendLantern);
-				hadSentLantern = true;
-				break;
-		}
-	}else{
-		//wait for next chance
-		console.log("There is no LS or had sent, please wait...");
-	}
-};
 
+//======================
 
-
-//=================
-
-
-//Below functions are all used for Local Display
-//============================================
 
 function gameLoop () {
 	
@@ -214,8 +157,79 @@ function gameLoop () {
   for (i = 0; i < players.length; i += 1) {
 	  players[i].update();
 	  players[i].render();
+	  // console.log("%o", players[i]);
   }
+
+
 };
+
+function createPlayer () {
+
+	var playerIndex,
+		playerImg;
+
+	// Create sprite sheet
+	playerImg = new Image();	
+
+	playerIndex = players.length;
+
+	// Create sprite
+	players[playerIndex] = Player({
+		context: canvas.getContext("2d"),
+		width: 1000,
+		height: 100,
+		image: playerImg,
+		numberOfFrames: 10,
+		ticksPerFrame: 4,
+		speed: 2,
+	});
+
+	players[playerIndex].x = Math.random() * (canvas.width - players[playerIndex].getFrameWidth() * players[playerIndex].scaleRatio);
+	// players[playerIndex].y = players.height - players[playerIndex].height * players[playerIndex].scaleRatio;
+	players[playerIndex].y = canvas.height;
+
+	players[playerIndex].speed = randomNum(2,10);
+
+	players[playerIndex].scaleRatio = Math.random() * 0.5 + 0.5;
+
+	// Load sprite sheet
+	playerImg.src = "images/c1.png";
+};
+
+//=============
+function createPlayer2 () {
+
+	var playerIndex,
+		playerImg;
+
+	// Create sprite sheet
+	playerImg = new Image();	
+
+	playerIndex = players.length;
+
+	// Create sprite
+	players[playerIndex] = Player({
+		context: canvas.getContext("2d"),
+		width: 7200,
+		height: 300,
+		image: playerImg,
+		numberOfFrames: 24,
+		ticksPerFrame: 0,
+		speed: 1,
+	});
+
+	players[playerIndex].x = Math.random() * (canvas.width - players[playerIndex].getFrameWidth() * players[playerIndex].scaleRatio);
+	// players[playerIndex].y = players.height - players[playerIndex].height * players[playerIndex].scaleRatio;
+	players[playerIndex].y = canvas.height;
+
+	players[playerIndex].speed = randomNum(2,10);
+
+	players[playerIndex].scaleRatio = Math.random() * 0.5 + 0.5;
+
+	// Load sprite sheet
+	playerImg.src = "images/c2.png";
+};
+
 
 function createLocalPlayer (n, img, width, height, numberOfFrames, ticksPerFrame, x, y, scaleRatio) {
 	var playerImg;
@@ -282,103 +296,9 @@ function createLocalSelecterList () {
 
 
 	createLocalPlayer(0, c1.img, c1.width, c1.height, c1.numberOfFrames, c1.ticksPerFrame, c1.x, c1.y, c1.scaleRatio);//lantern1
-	// console.log("c2: " + c2.scaleRatio);
+	console.log("c2: " + c2.scaleRatio);
 	createLocalPlayer(1, c2.img, c2.width, c2.height, c2.numberOfFrames, c2.ticksPerFrame, c2.x, c2.y, c2.scaleRatio);//lantern2
 };
-
-//================================
-function createPlayer (imgNumber, width, height, numberOfFrames, ticksPerFrame) {
-
-	// var playerImg;
-
-	// // Create sprite sheet
-	// playerImg = new Image();	
-
-	// // Load sprite sheet
-	// playerImg.src = image;
-
-	// Create sprite
-	var player = Player({
-		// context: canvas.getContext("2d"),
-		width: width,
-		height: height,
-		// image: playerImg,
-		numberOfFrames: numberOfFrames,
-		ticksPerFrame: ticksPerFrame,
-	});
-
-	player.speed = randomNum(2,10);
-	player.scaleRatio = Math.random() * 0.5 + 0.5;
-	player.imgNumber = imgNumber;
-
-	// player.x = Math.random() * (canvas.width - player.getFrameWidth() * player.scaleRatio);
-	// player.y = canvas.height;
-
-	return player;
-
-	
-};
-
-
-/**************************************************
-** GAME EVENT HANDLERS
-**************************************************/
-var setEventHandlers = function() {
-
-	// Socket connection successful
-	socket.on("connect", onSocketConnected);
-
-	// Socket disconnection
-	socket.on("disconnect", onSocketDisconnect);
-
-	socket.on("LS_Online", onLSOnline);
-
-	socket.on("LS_Offline", onLSOffline);
-
-	socket.on("MC_End_Lantern", onMCEndLantern);
-
-
-};
-
-
-// Socket connected
-function onSocketConnected() {
-	myId = socket.socket.sessionid;
-	console.log("Connected to socket server:" + myId);
-
-
-	// Send Mobile Client Connect message to the game server
-	socket.emit("MC_Connect");
-	console.log("send to server MC_Connect");
-};
-
-function onLSOnline() {
-	console.log("get LSOnline");
-	isLSOnline = true;
-};
-
-function onLSOffline() {
-	console.log("get LSOffline");
-	isLSOnline = false;
-}
-
-
-// Socket disconnected
-function onSocketDisconnect() {
-	console.log("Disconnected from socket server");
-};
-
-function onMCEndLantern(data) {
-	console.log(myId);
-	if(data.id == myId){
-		hadSentLantern = false;
-		console.log("MC_End_Lantern get, it's me!");
-	}else{
-		console.log("MC_End_Lantern get, but not me.");
-	}
-}
-
-
 
 
 

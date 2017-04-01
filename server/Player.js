@@ -1,49 +1,64 @@
 /**************************************************
-** GAME PLAYER CLASS
+** GAME PLAYER CLASS WITH SPRITE
 **************************************************/
-var Player = function(startX, startY, startColor) {
-	var x = startX,
-		y = startY,
-		color = startColor,
-		id;
+var Player = function(opt) {
+	var frameIndex = 0;	//The current frame to be displayed
+	var tickCount = 0; 	//The number updates since the current frame was first displayed
 
-	// Getters and setters
-	var getX = function() {
-		return x;
+	var that = {};
+	
+	that.ticksPerFrame = opt.ticksPerFrame || 0;//The number updates until the next frame should be displayed
+	that.numberOfFrames = opt.numberOfFrames || 1; //How many frames in a whole animate sprite
+
+	that.context = opt.context || 0;
+	that.width = opt.width;
+	that.height = opt.height;
+
+	that.image = opt.image;
+
+	that.x = opt.x || 0;
+	that.y = opt.y || 0;
+
+	that.scaleRatio = opt.scaleRatio || 1;
+
+	that.speed = opt.speed;
+
+	that.id = opt.id || 0;
+
+	that.update = function () {
+		tickCount += 1;
+
+		if(tickCount > that.ticksPerFrame) {
+			tickCount = 0;
+			if(frameIndex < that.numberOfFrames - 1) {
+				frameIndex += 1;
+			} else {
+				frameIndex = 0;
+			}
+			
+			that.y -= that.speed;
+		}
 	};
 
-	var getY = function() {
-		return y;
+	that.render = function () {
+		//Draw the animation
+		that.context.drawImage(
+			that.image,
+			frameIndex * that.width / that.numberOfFrames,
+			0,
+			that.width / that.numberOfFrames,
+			that.height,
+			that.x,
+			that.y,
+			that.width / that.numberOfFrames * that.scaleRatio,
+			that.height * that.scaleRatio);
 	};
 
-	var setX = function(newX) {
-		x = newX;
+	that.getFrameWidth = function () {
+		return that.width / that.numberOfFrames;
 	};
 
-	var setY = function(newY) {
-		y = newY;
-	};
-
-	var getColor = function() {
-		return color;
-	};
-
-	var setColor = function(newColor) {
-		color = newColor;
-	};
-
-	// Define which variables and methods can be accessed
-	return {
-		getX: getX,
-		getY: getY,
-		setX: setX,
-		setY: setY,
-		getColor: getColor,
-		setColor: setColor,
-		id: id
-	}
+	return that;
 };
 
-// Export the Player class so you can use it in
-// other files by using require("Player").Player
 exports.Player = Player;

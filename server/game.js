@@ -9,8 +9,13 @@ var util = require("util"),					// Utility resources (logging, object inspection
 /**************************************************
 ** GAME VARIABLES
 **************************************************/
-var socket,		// Socket controller
-	players;	// Array of connected players
+var socket;	// Socket controller
+// var	players;	// Array of connected players
+
+var largeScreenId;
+
+var lanterns;
+
 
 
 /**************************************************
@@ -18,7 +23,11 @@ var socket,		// Socket controller
 **************************************************/
 function init() {
 	// Create an empty array to store players
-	players = [];
+	// players = []; //MC array
+
+	largeScreenId = 0; //have no large screen
+
+	lanterns = []; //lanterns array
 
 	// Set up Socket.IO to listen on port 8000
 	socket = io.listen(8000);
@@ -47,126 +56,141 @@ var setEventHandlers = function() {
 
 // New socket connection
 function onSocketConnection(client) {
-	util.log("New player has connected: "+client.id);
+	//a client connected maybe MC maybe LS
+	util.log("New connected: " + client.id);
 
-	// Listen for client disconnected
 	client.on("disconnect", onClientDisconnect);
+	//Need to tell if it is Large Screen
 
-	// Listen for new player message
-	client.on("new player", onNewPlayer);
+	//Below messages from Mobile Client(MC)
 
-	// Listen for move player message
-	client.on("move player", onMovePlayer);
+	client.on("MC_Connect", onMCConnect);
 
-	client.on("change color player", onChangeColorPlayer);
+	// client.on("MC_Disconnect", onMCDisconnect);
 
-	// Listen for large screen online message
-	client.on("screen online", onScreenOnline);
+	client.on("MC_Start_Lantern", onMCStartLantern);
+
+	//Below messages from Large Screen(LS)
+
+	client.on("LS_Connect", onLSConnect);
+
+	// client.on("LS_Disconnect", onLSDisconnect);
+
+	client.on("LS_End_Lantern", onLSEndLantern);
+
 };
 
-// Socket client has disconnected
 function onClientDisconnect() {
-	util.log("Player has disconnected: "+this.id);
-
-	var removePlayer = playerById(this.id);
-
-	// Player not found
-	if (!removePlayer) {
-		util.log("Player not found: "+this.id);
-		util.log("Maybe it is screen instead of player.");
-		return;
-	};
-
-	// Remove player from players array
-	players.splice(players.indexOf(removePlayer), 1);
-
-	// Broadcast removed player to connected socket clients
-	this.broadcast.emit("remove player", {id: this.id});
-};
-
-//Large screen client has joined
-function onScreenOnline() {
-	// Send existing players to the Screen
-	var i, existingPlayer;
-	for (i = 0; i < players.length; i++) {
-		existingPlayer = players[i];
-		this.emit("existing players", {id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), color: existingPlayer.getColor()});
-	};
-};
-
-
-// New player has joined
-function onNewPlayer(data) {
-	// Create a new player
-
-	var newPlayer = new Player(data.x, data.y, data.color);
-	newPlayer.id = this.id;
-
-	// Broadcast new player to connected socket clients
-	this.broadcast.emit("new player", {id: newPlayer.id, x: newPlayer.getX(), y: newPlayer.getY(), color: newPlayer.getColor()});
-
-	// Send existing players to the new player
-	var i, existingPlayer;
-	for (i = 0; i < players.length; i++) {
-		existingPlayer = players[i];
-		this.emit("new player", {id: existingPlayer.id, x: existingPlayer.getX(), y: existingPlayer.getY(), color: existingPlayer.getColor()});
-	};
+	util.log("Client Offline: " + this.id);
+	if(this.id == largeScreenId) { // the main LS offline
+		largeScreenId = 0; //reset the LS id
+		this.broadcast.emit("LS_Offline");	
+		util.log("Now, we have no large screen, waiting for LS...");
 		
-	// Add new player to the players array
-	players.push(newPlayer);
+	}else{
+		util.log("MC or others offline");
+	}
+	
+	console.log("LS: " + largeScreenId);
+}
+
+
+function onLSConnect() {
+	console.log("LS: " + largeScreenId);
+	util.log("Large Screen Online: " + this.id );
+	if(largeScreenId == 0) { //have no LS
+		largeScreenId = this.id;
+		console.log("Now we have largeScreen: " + largeScreenId);
+		this.broadcast.emit("LS_Online");
+		console.log("emit LS_Online");
+
+	}else{
+		console.log("We need just only one LS, so let's ignore the LS: " + this.id);
+	}
+	
 };
 
-// Player has moved
-function onMovePlayer(data) {
-	// Find player in array
-	var movePlayer = playerById(this.id);
+// function onLSDisconnect(data) {
+// 	util.log("May be One Large Screen Offline: " + data.id);
+	
+// 	if(data.id == largeScreenId) { // the main LS offline
+// 		this.broadcast.emit("LS_Offline");	
+// 		largeScreenId = 0; //reset the LS id
+// 		util.log("Now, we have no large screen, waiting for LS...");
+// 	}
+
+// };
+
+function onMCConnect() {
+	
+	if(largeScreenId != 0){
+		// this.broadcast.emit("LS_Online");
+		util.log("MC has connected: " + this.id);
+		util.log("Server send LS_Online");
+		this.broadcast.emit("LS_Online");
+	}else{
+		util.log("MC has connected: " + this.id);
+		util.log("Server send LS_Offline");
+		this.broadcast.emit("LS_Offline");
+	}
+};
+
+function onMCDisconnect() {
+	util.log("MC has disconnected: " + this.id);
+};
+
+//MC send to server just a data(opt) instead of Player obj
+function onMCStartLantern(data) {
+	// console.log(data);
+	var newLantern = new Player(data);
+	newLantern.imgNumber = data.imgNumber;
+	newLantern.id = this.id;
+
+	// Broadcast new Lantern to connected LS
+	this.broadcast.emit("LS_New_Lantern", newLantern);
+
+
+	// console.log("send LS_New_Lantern: ", newLantern);
+
+		
+	// Add new lantern to the lanterns array
+	lanterns.push(newLantern);
+
+};
+
+function onLSEndLantern(data) {
+
+	util.log("This MC's lantern is end: " + data.id);
+
+	var removeLantern = lanternById(data.id);
 
 	// Player not found
-	if (!movePlayer) {
-		util.log("Player not found: "+this.id);
+	if (!removeLantern) {
+		util.log("Lantern not found: "+data.id);
 		return;
 	};
 
-	// Update player position
-	movePlayer.setX(data.x);
-	movePlayer.setY(data.y);
+	// Remove lantern from lanterns array
+	lanterns.splice(lanterns.indexOf(removeLantern), 1);
 
-	// Broadcast updated position to connected socket clients
-	this.broadcast.emit("move player", {id: movePlayer.id, x: movePlayer.getX(), y: movePlayer.getY()});
+	// Broadcast removed lantern to connected MC
+	this.broadcast.emit("MC_End_Lantern", {id: data.id});
 };
-
-// Player has moved
-function onChangeColorPlayer(data) {
-	// Find player in array
-	var changePlayer = playerById(this.id);
-
-	// Player not found
-	if (!changePlayer) {
-		util.log("Player not found: "+this.id);
-		return;
-	};
-
-	// Update player position
-	changePlayer.setColor(data.color);
-
-	// Broadcast updated position to connected socket clients
-	this.broadcast.emit("change color player", {id: changePlayer.id, color: changePlayer.getColor()});
-};
-
 
 /**************************************************
 ** GAME HELPER FUNCTIONS
 **************************************************/
-// Find player by ID
-function playerById(id) {
+// Find lantern by ID
+function lanternById(id) {
 	var i;
-	for (i = 0; i < players.length; i++) {
-		if (players[i].id == id)
-			return players[i];
+	for (i = 0; i < lanterns.length; i++) {
+		if (lanterns[i].id == id)
+			return lanterns[i];
 	};
 	
 	return false;
 };
+
 
 /**************************************************
 ** RUN THE GAME

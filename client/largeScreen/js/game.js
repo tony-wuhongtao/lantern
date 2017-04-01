@@ -1,42 +1,67 @@
 /**************************************************
 ** GAME VARIABLES
 **************************************************/
-var canvas,			// Canvas DOM element
-	ctx,			// Canvas rendering context
-	keys,			// Keyboard input
-	devOris,		//Device Orientation
-	localPlayer,	// Local player
-	remotePlayers,	// Remote players
-	socket;			// Socket connection
+var canvas;			// Canvas DOM element
+// var	ctx;			// Canvas rendering context
+var	socket;			// Socket connection
 
-var serverURL = "http://demo.redline-china.com";
-// var serverURL = "http://localhost";
+var lanterns;
+
+// var serverURL = "http://demo.redline-china.com";
+var serverURL = "http://localhost";
 /**************************************************
 ** GAME INITIALISATION
 **************************************************/
 function init() {
 	// Declare the canvas and rendering context
 	canvas = document.getElementById("gameCanvas");
-	ctx = canvas.getContext("2d");
+	// ctx = canvas.getContext("2d");
 
 	// Maximise the canvas
 	// canvas.width = window.innerWidth;
 	// canvas.height = window.innerHeight;
-	canvas.width = 1024;
-	canvas.height =	768;
+	// canvas.width = 1024;
+	// canvas.height =	768;
+	canvas.width = window.innerWidth-60;
+	canvas.height = window.innerHeight-60;
+	canvas.style.margin = 'auto auto';
+	canvas.style.position='absolute';
+	canvas.style.top = '20px';
+	canvas.style.left = '30px';
+
+	
+	
+
 
 
 
 	// Initialise socket connection
 	socket = io.connect(serverURL, {port: 8000, transports: ["websocket"]});
 
-	// Initialise remote players array
-	remotePlayers = [];
+	// Initialise lanterns array
+	lanterns = [];
 
 	// Start listening for events
 	setEventHandlers();
+
+	//background
+	// setBackgroundImage();
 };
 
+var setBackgroundImage = function () {
+	console.log("setbk");
+	var context = canvas.getContext( '2d' );
+
+    var background = new Image();
+    background.src = 'images/bk1.png';
+
+    background.onload = function(){
+        context.drawImage(background,0,0, canvas.width, canvas.height);
+        // console.log("%o", context);
+    };
+
+
+}; 
 
 /**************************************************
 ** GAME EVENT HANDLERS
@@ -52,27 +77,17 @@ var setEventHandlers = function() {
 	// Socket disconnection
 	socket.on("disconnect", onSocketDisconnect);
 
-	socket.on("existing players", onExistingPlayer);
-
-	// New player message received
-	socket.on("new player", onNewPlayer);
-
-	// Player move message received
-	socket.on("move player", onMovePlayer);
-
-	// Player change color message received
-	socket.on("change color player", onChangeColorPlayer);
-
-	// Player removed message received
-	socket.on("remove player", onRemovePlayer);
+	socket.on("LS_New_Lantern", onLSNewLantern);
 
 };
 
 // Browser window resize
 function onResize(e) {
 	// Maximise the canvas
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
+	canvas.width = window.innerWidth-60;
+	canvas.height = window.innerHeight-60;
+
+	setBackgroundImage();
 };
 
 // Socket connected
@@ -80,7 +95,7 @@ function onSocketConnected() {
 	console.log("Screen Connected to socket server");
 
 	// Send message to server "screen online"
-	socket.emit("screen online");
+	socket.emit("LS_Connect");
 };
 
 // Socket disconnected
@@ -89,64 +104,63 @@ function onSocketDisconnect() {
 };
 
 // Exiting player
-function onExistingPlayer(data) {
-	// Initialise the new player
-	var newPlayer = new Player(data.x, data.y, data.color);
-	newPlayer.id = data.id;
+function onLSRefreshLanterns(data) {
+	console.log("get from onLSRefreshLanterns %o", data);
+	// Add new Lantern
+	if(playerById(data.id) == false){
+		data.context = canvas.getContext("2d");
+		var lanternImg = new Image();
+		data.image = lanternImg;
 
-	// Add new player to the remote players array
-	remotePlayers.push(newPlayer);
-}
+		var newLantern = Player(data);
+		newLantern.x = Math.random() * (canvas.width - newLantern.getFrameWidth() * newLantern.scaleRatio);
+		newLantern.y = canvas.height;
 
-// New player
-function onNewPlayer(data) {
-	console.log("New player connected: "+data.id);
+		switch(data.imgNumber){
+			case 1:
+				data.image.src = "images/c1.png";
+				break;
+			case 2:
+				data.image.src = "images/l1.png";
+				break;
+		}
 
-	// Initialise the new player
-	var newPlayer = new Player(data.x, data.y, data.color);
-	newPlayer.id = data.id;
+			// console.log("newLantern : %o", newLantern);
 
-	// Add new player to the remote players array
-	remotePlayers.push(newPlayer);
+
+		lanterns.push(newLantern);
+	}
+
 };
 
-// Move player
-function onMovePlayer(data) {
-	var movePlayer = playerById(data.id);
+// New lantern
+function onLSNewLantern(data) {
+	console.log("New Lantern start: "+data.id);
 
-	// Player not found
-	if (!movePlayer) {
-		console.log("Player not found: "+data.id);
-		return;
-	};
+	// Add new Lantern
 
-	// Update player position
-	movePlayer.setX(data.x);
-	movePlayer.setY(data.y);
-};
 
-function onChangeColorPlayer(data) {
-	var changePlayer = playerById(data.id);
-	// Player not found
-	if (!changePlayer) {
-		console.log("Player not found: "+data.id);
-		return;
-	};
-	changePlayer.setColor(data.color);
-};
+	data.context = canvas.getContext("2d");
+	var lanternImg = new Image();
+	data.image = lanternImg;
 
-// Remove player
-function onRemovePlayer(data) {
-	var removePlayer = playerById(data.id);
+	var newLantern = Player(data);
+	newLantern.x = Math.random() * (canvas.width - newLantern.getFrameWidth() * newLantern.scaleRatio);
+	newLantern.y = canvas.height;
 
-	// Player not found
-	if (!removePlayer) {
-		console.log("Player not found: "+data.id);
-		return;
-	};
+	switch(data.imgNumber){
+		case 1:
+			data.image.src = "images/c1.png";
+			break;
+		case 2:
+			data.image.src = "images/l1.png";
+			break;
+	}
 
-	// Remove player from array
-	remotePlayers.splice(remotePlayers.indexOf(removePlayer), 1);
+	// console.log("newLantern : %o", newLantern);
+	lanterns.push(newLantern);
+
+	
 };
 
 
@@ -166,12 +180,18 @@ function animate() {
 **************************************************/
 function draw() {
 	// Wipe the canvas clean
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
 
 	// Draw the remote players
 	var i;
-	for (i = 0; i < remotePlayers.length; i++) {
-		remotePlayers[i].draw(ctx);
+	for (i = 0; i < lanterns.length; i++) {
+		lanterns[i].update();
+	  	lanterns[i].render();
+		if(lanterns[i].y < -lanterns[i].height/2*lanterns[i].scaleRatio){ //out of top 
+			socket.emit("LS_End_Lantern", {id:lanterns[i].id});
+			lanterns.splice(i, 1);
+
+		}
 	};
 };
 
@@ -182,9 +202,9 @@ function draw() {
 // Find player by ID
 function playerById(id) {
 	var i;
-	for (i = 0; i < remotePlayers.length; i++) {
-		if (remotePlayers[i].id == id)
-			return remotePlayers[i];
+	for (i = 0; i < lanterns.length; i++) {
+		if (lanterns[i].id == id)
+			return lanterns[i];
 	};
 	
 	return false;
