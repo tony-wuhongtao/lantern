@@ -1,28 +1,185 @@
 <!DOCTYPE html>
-
 <html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="css/style.css" type="text/css" />
+	<title>Mobile - Demo</title>
+</head>
+<body>
+	<div class="wrapper">
+		<div class="container">
+			<div id="showLantern" class="container-logo">
+				<img class="container-child-logo" src="">
+			</div>
+			<div class="container-image">
+				<h3 id="title"></h3>
+				<div class="testi-image" id="myimg">
 
-	<head>
-		<title>Mobile - Demo</title>
-		<meta charset="utf-8">
-		
-		<link rel="stylesheet" href="style/style.css">
-	</head>
-	
-	<body>
-		<canvas id="gameCanvas" style="border:2px solid black;"></canvas>
-		
-		<!-- <script src="http://demo.redline-china.com:8000/socket.io/socket.io.js"></script> -->
-		<script src="http://localhost:8000/socket.io/socket.io.js"></script>
-		<script src="js/requestAnimationFrame.js"></script>
-		<!-- <script src="js/Keys.js"></script> -->
-		<!-- <script src="js/devOrientation.js"></script> -->
-		<script src="js/Player.js"></script>
-		<script src="js/game.js"></script>
+					<span class="radiopic" id="pic1" onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic" class="inputpic" value="01">
+					</span>
+					<span class="radiopic" id="pic2" onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic" class="inputpic" value="02">
+					</span>
+					<span class="radiopic" id="pic3"  onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic" class="inputpic" value="03">
+					</span>
+					<span class="radiopic" id="pic4" onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic" class="inputpic" value="04">
+					</span>
+					<span class="radiopic" id="pic5" onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic"  class="inputpic" value="05">
+					</span>
+					<span class="radiopic" id="pic6" onclick="showp(this.id)" style="opacity: 0.2">
+						<input type="radio" name="pic" class="inputpic" value="06">
+					</span>
+				
+				</div>
+				
+			</div>
+			<div class="container-input">
+				<input class="input-enterprise" type="text" placeholder="输入祝福语" name="company" id="company" onfocus="display()">
+				<div id="fail"></div>
+			</div>
+			<div class="container-button">
+				<!-- <img src="images/image.jpg" alt="Customer Testimonails"> -->
+				<a id="sign-button" href="javascript:;" class="button button-large button-circle"  name="submit" onclick="sub()"></a>
+			</div>
+		</div>
+	</div>
+	<script>
 
-		<script>
-			// Initialise the game
-			init();
-		</script>
-	</body>
+	// var Img=document.getElementById("myimg");
+	// console.log(Img.childNodes);
+	// Img.style.opacity=0.2;
+
+
+	var title = new Array(); 
+	var pic = new Array();
+
+	var TitleText = [
+					"超级无敌心愿灯",
+					"心想事成万能灯",
+					"海枯石烂爱情灯",
+					"世界和平心愿灯",
+					"恭喜发财鸿运灯",
+					"中国传统孔明灯"];
+	var Lanterns = [
+					"images/01.jpg",
+					"images/02.jpg",
+					"images/03.jpg",
+					"images/04.jpg",
+					"images/05.jpg",
+					"images/06.jpg",
+					];
+	// title["pic1"] = "超级无敌心愿灯";  
+	// title["pic2"] = "心想事成万能灯";  
+	// title["pic3"] = "海枯石烂爱情灯";
+	// title["pic4"] = "世界和平心愿灯";  
+	// title["pic5"] = "恭喜发财鸿运灯";  
+	// title["pic6"] = "中国传统孔明灯";
+
+	// pic["pic1"] = "images/01.jpg";
+	// pic["pic2"] = "images/02.jpg";
+	// pic["pic3"] = "images/03.jpg";
+	// pic["pic4"] = "images/04.jpg";
+	// pic["pic5"] = "images/05.jpg";
+	// pic["pic6"] = "images/06.jpg";
+
+
+	window.onload=function(){
+		var radio=document.getElementsByClassName("radiopic");
+		var pic=document.getElementsByName("pic");
+		var str = [0,1,2,3,4,5];
+		var random = Math.floor(Math.random()*str.length);
+		var result = str[random];
+		radio[result].style.opacity=1;
+		pic[result].checked=true;
+		var title=document.getElementById("title");
+		var show = document.getElementById("showLantern");
+		title.innerHTML=TitleText[result];
+		show.innerHTML = "<img class='container-child-logo' src="+ Lanterns[result]+">";
+	}
+	function showp(id){
+		var t=TitleText[id.substr(id.length-1,1)-1];
+		var p="<img class='container-child-logo' src="+ Lanterns[id.substr(id.length-1,1)-1]+">"
+		document.getElementById("title").innerHTML=t;
+		document.getElementById("showLantern").innerHTML = p;
+		var Span=document.getElementsByClassName("radiopic");
+		for(var i=0;i<Span.length;i++){
+			Span[i].style.opacity=0.2;
+		}
+
+			document.getElementById(id).style.opacity=1;
+	}
+
+	function getpic(){
+		var value="";
+		var radio=document.getElementsByName("pic");
+
+		// console.log(radio)
+		for(var i=0;i<radio.length;i++){
+			// console.log(i)
+			if(radio[i].checked==true){
+				value=radio[i].value;
+				break;
+			}
+		}
+		return value;
+	}
+
+
+
+	function display(){
+		var Fail=document.getElementById("fail");
+		Fail.innerHTML="";
+	}	     
+		
+	function sub(){
+		
+		var pic=getpic();
+		console.log(pic)
+		var title=document.getElementById("title").innerHTML;
+
+		var company=document.getElementById("company").value;
+		if(company != ""){
+			var url="http://data.bon-cloud.net/api/?company="+company+"&pic="+pic+"&title="+title;
+			console.log(url);
+			httpGetAsync(url,back);
+		}else{
+			var Fail=document.getElementById("fail");
+			Fail.innerHTML="您还没有输入祝福语哦！"
+		}
+		
+	}
+
+
+	function httpGetAsync(theUrl, callback)
+	{
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.onreadystatechange = function() { 
+	        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+	            callback(xmlHttp.responseText);
+	    }
+	    xmlHttp.open("GET", theUrl, true); // true 异步
+	    xmlHttp.send(null);
+	}
+
+	function back(json){
+		var json1=JSON.parse(json);
+		var tip=json1.tip;
+		if(tip==1){
+			// alert("成功");
+			location.href="./success.html";
+		}else{
+			//alert("失败");
+		}
+	}
+		
+
+	</script>
+
+</body>
+
 </html>
