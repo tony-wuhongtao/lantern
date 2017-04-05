@@ -59,6 +59,7 @@ function onSocketConnection(client) {
 	//a client connected maybe MC maybe LS
 	util.log("New connected: " + client.id);
 
+
 	client.on("disconnect", onClientDisconnect);
 	//Need to tell if it is Large Screen
 
@@ -110,16 +111,6 @@ function onLSConnect() {
 	
 };
 
-// function onLSDisconnect(data) {
-// 	util.log("May be One Large Screen Offline: " + data.id);
-	
-// 	if(data.id == largeScreenId) { // the main LS offline
-// 		this.broadcast.emit("LS_Offline");	
-// 		largeScreenId = 0; //reset the LS id
-// 		util.log("Now, we have no large screen, waiting for LS...");
-// 	}
-
-// };
 
 function onMCConnect() {
 	
@@ -127,11 +118,11 @@ function onMCConnect() {
 		// this.broadcast.emit("LS_Online");
 		util.log("MC has connected: " + this.id);
 		util.log("Server send LS_Online");
-		this.broadcast.emit("LS_Online");
+		this.emit("LS_Online");
 	}else{
 		util.log("MC has connected: " + this.id);
 		util.log("Server send LS_Offline");
-		this.broadcast.emit("LS_Offline");
+		this.emit("LS_Offline");
 	}
 };
 
@@ -147,6 +138,7 @@ function onMCStartLantern(data) {
 	newLantern.id = this.id;
 
 	// Broadcast new Lantern to connected LS
+	console.log("imgNumber: " + newLantern.imgNumber);
 	this.broadcast.emit("LS_New_Lantern", newLantern);
 
 

@@ -103,35 +103,6 @@ function onSocketDisconnect() {
 	console.log("Disconnected from socket server");
 };
 
-// Exiting player
-function onLSRefreshLanterns(data) {
-	console.log("get from onLSRefreshLanterns %o", data);
-	// Add new Lantern
-	if(playerById(data.id) == false){
-		data.context = canvas.getContext("2d");
-		var lanternImg = new Image();
-		data.image = lanternImg;
-
-		var newLantern = Player(data);
-		newLantern.x = Math.random() * (canvas.width - newLantern.getFrameWidth() * newLantern.scaleRatio);
-		newLantern.y = canvas.height;
-
-		switch(data.imgNumber){
-			case 1:
-				data.image.src = "images/c1.png";
-				break;
-			case 2:
-				data.image.src = "images/l1.png";
-				break;
-		}
-
-			// console.log("newLantern : %o", newLantern);
-
-
-		lanterns.push(newLantern);
-	}
-
-};
 
 // New lantern
 function onLSNewLantern(data) {
@@ -148,6 +119,7 @@ function onLSNewLantern(data) {
 	newLantern.x = Math.random() * (canvas.width - newLantern.getFrameWidth() * newLantern.scaleRatio);
 	newLantern.y = canvas.height;
 
+	console.log("imgNumber: " + data.imgNumber);
 	switch(data.imgNumber){
 		case 1:
 			data.image.src = "images/c1.png";
